@@ -7,11 +7,13 @@ class Mancala():
         Initialize game board.
         Each game has
             - `board`: the current state of the game represented as a list.
+            - `next_player`: the player to play next
             - `player_goals`: constant representing the indexes of the goals of the players.
         """
 
         sides = [[4 for i in range(6)] + [0] for i in range(2)]
         self.board = sides[0] + sides[1]
+        self.next_player = 0
 
         self.player_goals = [6, 13]
 
@@ -28,17 +30,17 @@ class Mancala():
         """
         return 1 if player == 0 else 0
 
-    def actions(self, state: list) -> list:
+    def actions(self, state: list, player: int) -> list:
         """
         Returns a list of all legal actions [`i`, `i`, `i`, ...] in state `state`.
         """
-        player = self.player(state)
+        # player = self.player(state)
 
         start = 0 if player == 0 else self.player_goals[0] + 1
         end = self.player_goals[0] if player == 0 else self.player_goals[1]
-        
+
         # if the bucket is not empty you can take from it
-        return [bn for bn, bv in enumerate(state[start:end]) if bv != 0]
+        return [bn + start for bn, bv in enumerate(state[start:end]) if bv != 0]
 
     def terminal(self, state: list):
         """
@@ -49,16 +51,21 @@ class Mancala():
         if state[:self.player_goals[0]].count(0) == 6 or state[self.player_goals[0] + 1:self.player_goals[1]].count(0) == 6:
             return True
 
-    def winner(self):
-        return 2 if self.player_goals[0] == self.player_goals[1]
-        return 0 if self.player_goals[0] > self.player_goals[1] else 1
+    def winner(self, state: list) -> int:
+        if state[self.player_goals[0]] == state[self.player_goals[1]]:
+            return 2
+        elif state[self.player_goals[0]] > state[self.player_goals[1]]:
+            return 0
+        else:
+            return 1
+        # return 2 if self.player_goals[0] == self.player_goals[1] else 0 if self.player_goals[0] > self.player_goals[1] else 1
 
-    def result(self, state: list, action: int) -> tuple:
+    def result(self, state: list, action: int, current_player: int) -> tuple:
         """
         Return the resulting state and player as tuple `(state, player)` from taking action `action` in state `state`.
         """
 
-        current_player = self.player(state)
+        # current_player = self.player(state)
         next_player = self.other_player(current_player)
         result = state[:]
         
@@ -114,17 +121,19 @@ class Mancala():
 
             self.print_state(self.board)
 
-            player = self.player(self.board)
-            actions = self.actions(self.board)
+            player = self.next_player
+            actions = self.actions(self.board, player)
+
+            print(actions)
 
             if not agent_battle and (not opponent or player == human):
-                print(f"Player {player}'s Move.")
+                print(f"Player {player + 1}'s Move.")
 
                 while True:
                     action = int(input().strip()) - 1
                     
                     if not action in actions:
-                        print('That place is already filled or invalid. Still your move.')
+                        print('That action is invalid. Still your move.')
                     else:
                         break
 
@@ -136,22 +145,18 @@ class Mancala():
                 print(f"{opponent_name} distributed stones from bucket {action + 1}.")
 
             # update board
-            self.board = self.result(self.board, action)
+            self.board, self.next_player = self.result(self.board, action, player)
 
-            # check if game over
-            winner = player if self.terminal(self.board) else None 
-            if winner:
+            if self.terminal(self.board):
                 self.print_state(self.board)
 
                 print("\nGAME OVER\n")
-                print(f"Result is { "tie." if winner == 2 else f"player {winner + 1} won." }")
+
+                winner = self.winner(self.board)
+                result = "Game tie." if winner == 2 else f"Player {winner + 1} won." 
+                print(result)
 
                 break
-
-        # kwargs make this hard                
-        # if input("Play again?\n").lower() == "y":
-        #     self.board = [4 for i in range(12)] + [0, 0]
-        #     self.play(kwargs)
 
 if __name__ == "__main__":
     mancala = Mancala()

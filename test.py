@@ -1,25 +1,42 @@
 
-next_player = None
 
-sides = [[4 for i in range(6)] + [0] for i in range(2)]
-result = sides[0] + sides[1]
+in_one = "ello there"
+in_two = " "
 
-# 12 max
-action = 9
+def diff(in_one, in_two):
+    final = ""
 
-idx = 1
+    longer = in_one if len(in_one) > len(in_two) else in_two
 
-for ln in range(result[action]):
-    if action + idx >= len(result):
-        idx = -action
+    for idx in range(len(longer)):
+        char_one = in_one[idx] if idx < len(in_one) else ""
+        char_two = in_two[idx] if idx < len(in_two) else ""
 
-    result[action + idx] += 1
+        # if char_one == " " or char_two == " ":
+        #     continue
+        
+        if char_one == "":
+            final += f"{{{char_two}}}"
+        elif char_two == "":
+            final += f"{{{char_one}}}"
+        elif char_one != char_two:
+            final += f"({char_one}/{char_two})"
 
-    if ln + 1 == result[action] and action + idx in [6, 13]:
-        next_player = 1
+        else:
+            final += longer[idx]
 
-    idx += 1
 
-result[action] = 0
+    # for char_one in in_one:
+    #     for char_two in in_two:
+    #         if char_one != char_two:
+    #             final += f"({char_one}/{char_two})"
+    #         else:
+    #             final += char_one
 
-print(result, next_player)
+    print(final)
+    # for char_idx, char in enumerate(in_one):
+        
+
+diff(in_one, in_two)
+
+
